@@ -3,6 +3,10 @@ const custo = require('./customer')
 const csv = require('fast-csv')
 const fs = require('fs')
 
+
+
+
+
 const addCustomer = async (req,res,next) => {
 
     // extract data from the body
@@ -55,7 +59,7 @@ const addCustomer = async (req,res,next) => {
         return res.status(300).json({
             code:"ES300",
             msg:"partial happen",
-            docs
+            docs:[docs[0]]
         })
     }
     // console.log(addPartialyHappen)
@@ -120,15 +124,162 @@ const addCustomer = async (req,res,next) => {
   
 }
 
-const addCsvCustomer = (req,res,next) =>{
+const addCsvCustomer = async (req,res,next) =>{``
     
     const file = req.file
-
-    csv.fromPath(file.path,{headers:true})
-    .on('data',(row) => console.log(row))
-    .on('end',()=>{
-        fs.unlinkSync(file.path)
+    let partialMatch =[]
+    let myDocs=[]
+    let data=[]
+    csv.parseFile(file.path,{headers:true})
+    .on('data',function(dat){
+        data.push(dat)
     })
+    .on('end',async ()=>{
+        fs.unlinkSync(file.path)
+        
+        for (let i = 0; i < data.length; i++) {
+
+            if (data[i].CustomerName == undefined || data[i].Email == undefined || data[i].Phone1 == undefined ){
+                return res.status(500).json({
+                    code:"ES500CSV",
+                    msg:"csv not valida collumn",
+                    
+                })
+            }
+            const newData = new CUSTOMER({
+                name: data[i].CustomerName,
+                email: data[i].Email,
+                phone1: data[i].Phone1,
+                phone2: data[i].Phone2
+            })
+
+            const cust = new custo(newData)
+            try {
+                await cust.search()
+                
+            } catch (error) {
+                console.log(error)
+                return res.status(500).json({
+                    code:"ES500ES",
+                    msg:"somthinwent wrong at elasticsearch engin call the developer"
+                })
+            }
+
+            if (cust.isNone()) {
+                console.log("there is no recored")
+                try {
+                    console.log("added new recored to database & indexing")
+                   let status = await cust.indexing()
+                   if(status){
+                       console.log("before database ")
+                       await cust.saveTodataBase()
+                       console.log("afetre database ")
+
+                   }
+                    
+                    console.log("end added new recored to database & indexing")
+                } catch (error) {
+                    // throw error
+
+                    return res.status(500).json({
+                        code:"ES500",
+                        err:error.message,
+                        msg:"sothin went wrong at indexing check the server"
+                    })
+                }
+
+            } else if (cust.isExact()) {
+
+                console.log("exact match thu will not inserted to database")
+
+            } else if (cust.isPartial()) {
+                // console.log(cust.es.hits.hits)
+                if (cust.es.hits.total.value > 1) {
+                    partialMatch = cust.es.hits.hits.filter(val => val._score == cust.es.hits.max_score)
+                } else {
+                    partialMatch = [...cust.es.hits.hits]
+                }
+                myDocs.push({
+                    real: newData,
+                    partia: partialMatch[0]
+                })
+
+                console.log("partial match")
+
+            }
+            
+        }
+
+        if(myDocs.length>0){
+
+            
+            return res.status(300).json({
+                msg:"successfully uploaded",
+                docs:myDocs
+            })
+        }else{
+            return res.status(200).json({
+                msg: "successfully uploaded",
+                
+            })
+        }
+    }).on('error',(err)=>{
+        console.log(err)
+        return res.status(500).json({
+            code:"ES500CSV",
+            msg:"somthin went wrong at parsing csv",
+            err:err.message
+        })
+    })
+
+}
+
+const addPartialRecords = async (req,res,next)=>{
+    const {data} = req.body
+    console.log(data)
+    for (let i = 0; i < data.length; i++) {
+        const newData = new CUSTOMER({
+            name: data[i].name,
+            email: data[i].email,
+            phone1: data[i].phone1,
+            phone2: data[i].phone2
+        })
+
+        const cust = new custo(newData)
+
+        try {
+            console.log("before search")
+            await cust.search()
+            console.log("after search")
+
+            if(cust.isExact()){
+                return res.status(500).json({
+                    code:"ES500",
+                    msg:"this recored is exist"
+                })
+            }
+            
+            await cust.indexing(()=> console.log("indexing"))
+         
+            await cust.saveTodataBase()
+            
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({
+                code:"ES500PR",
+                msg:"there is erro check the backend",
+                err:error.message
+            })
+        }
+        
+    }
+
+    return res.status(200).json({
+    code:"ES200PR",
+    msg:"sccessflly added new records"
+    })
+    
+
 
 }
 
@@ -136,5 +287,6 @@ const addCsvCustomer = (req,res,next) =>{
 
 module.exports = {
     addCustomer,
-    addCsvCustomer
+    addCsvCustomer,
+    addPartialRecords
 }

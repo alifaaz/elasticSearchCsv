@@ -36,4 +36,6 @@ router.route('/addCustomer/csv').post((req,res,next)=>{
 
 
 
+router.route('/addCstomer/partial').post(Controller.addPartialRecords)
+
 module.exports = router
