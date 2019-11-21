@@ -149,14 +149,10 @@ const addCsvCustomer = async (req,res,next) =>{
                 try {
                     console.log("added new recored to database & indexing")
                     // reading indexing status
-                   let status = await cust.indexing()
-                   if(status){
-                       console.log("before database ")
+                        await cust.indexing()
                        // inserting to database after indexing
                        await cust.saveTodataBase()
-                       console.log("afetre database ")
-
-                   }
+                     
                     
                     console.log("end added new recored to database & indexing")
                 } catch (error) {

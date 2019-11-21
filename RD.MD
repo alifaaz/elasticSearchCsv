@@ -21,81 +21,120 @@
         |_ [/] add customer
         |_ [/] add partialExact
         |_ [/] mainpulate ui
+curl -XPOST "localhost:9200/customers/_mapping?pretty" -H 'Content-Type: application/json' -d"
+{
+  \"properties\": {
+    \"name\": {
+      \"type\": \"text\",
+      \"fields\": {
+        \"name.keyword\": {
+          \"type\": \"keyword\"
+        }
+      }
+    },
+     \"email\": {
+      \"type\": \"text\",
+      \"fields\": {
+        \"email.keyword\": {
+          \"type\": \"keyword\"
+        }
+      }
+    },
+    \"phone1\": {
+      \"type\": \"text\",
+      \"fields\": {
+        \"phone1.keyword\": {
+          \"type\": \"keyword\"
+        }
+      }
+    },
+     \"phone2\": {
+      \"type\": \"text\",
+      \"fields\": {
+        \"phone2.keyword\": {
+          \"type\": \"keyword\"
+        }
+      }
+    }
+  }
+}
+"
+
 
 # elastic query
- "bool": {
-                "should": [
+ \"bool\": {
+                \"should\": [
                     {
-                        "bool": {
-                            "boost": 10,
-                            "must": [
+                        \"bool\": {
+                            \"boost\": 10,
+                            \"must\": [
                                 {
-                                    "term":{
-                                        "name.keyword":thisData.name
+                                    \"term\":{
+                                        \"name.keyword\":thisData.name
                                     }
                                 },
                                 {
-                                    "term": {
-                                        "email.keyword": thisData.email
+                                    \"term\": {
+                                        \"email.keyword\": thisData.email
                                     }
                                 },
                                 {
-                                    "terms": {
-                                        "phone1.keyword": [thisData.phone1, thisData.phone2]
+                                    \"terms\": {
+                                        \"phone1.keyword\": [thisData.phone1, thisData.phone2]
                                     }
                                 },
                                 {
-                                    "terms": {
-                                        "phone2.keyword": [thisData.phone1, thisData.phone2]
+                                    \"terms\": {
+                                        \"phone2.keyword\": [thisData.phone1, thisData.phone2]
                                     }
                                 }
                             ]
                         }
                     },
                     {
-                        "bool": {
-                            "should": [
+                        \"bool\": {
+                            \"should\": [
                                 {
-                                    "bool": {
-                                        "must": [
+                                    \"bool\": {
+                                        \"must\": [
                                             {
-                                                "match": {
-                                                    "name": {
-                                                        "query": thisData.name,
-                                                        "operator": "and",
-                                                        "fuzziness": 0,
-                                                        "fuzzy_transpositions": "false",
-                                                        "auto_generate_synonyms_phrase_query": "false"
+                                                \"match\": {
+                                                    \"name\": {
+                                                        \"query\": thisData.name,
+                                                        \"operator\": \"and\",
+                                                        \"fuzziness\": 0,
+                                                        \"fuzzy_transpositions\": \"false\",
+                                                        \"auto_generate_synonyms_phrase_query\": \"false\"
                                                     }
                                                 }
                                             },
                                             {
-                                                "term": {
-                                                    "email.keyword": thisData.email
+                                                \"term\": {
+                                                    \"email.keyword\": thisData.email
                                                 }
                                             }
                                         ]
                                     }
                                 },
                                 {
-                                    "bool": {
-                                        "must": [
+                                    \"bool\": {
+                                        \"must\": [
                                             {
-                                                "term": {
-                                                    "email.keyword":thisData.email
+                                                \"term\": {
+                                                    \"email.keyword\":thisData.email
                                                 }
                                             },
                                             {
-                                                "bool": {
-                                                    "should": [
+                                                \"bool\": {
+                                                    \"should\": [
                                                         {
-                                                            "terms": {
-                                                                "phone1": [thisData.phone1, thisData.phone2]
+                                                            \"terms\": {
+                                                                \"phone1\": [thisData.phone1, thisData.phone2]
                                                             }
                                                         },
                                                         {
-                                                            "terms": {
-                                                                "phone2": [thisData.phone1, thisData.phone2]
+                                                            \"terms\": {
+                                                                \"phone2\": [thisData.phone1, thisData.phone2]
                                                             }
                                                         }
                                                     ]
@@ -106,16 +145,16 @@
                                     }
                                 },
                                 {
-                                    "bool": {
-                                        "must": [
+                                    \"bool\": {
+                                        \"must\": [
                                             {
-                                                "match": {
-                                                    "name": {
-                                                        "query": thisData.name,
-                                                        "operator": "and",
-                                                        "fuzziness": 1,
-                                                        "fuzzy_transpositions": "false",
-                                                        "auto_generate_synonyms_phrase_query": "false"
+                                                \"match\": {
+                                                    \"name\": {
+                                                        \"query\": thisData.name,
+                                                        \"operator\": \"and\",
+                                                        \"fuzziness\": 1,
+                                                        \"fuzzy_transpositions\": \"false\",
+                                                        \"auto_generate_synonyms_phrase_query\": \"false\"
                                                     }
                                                 }
                                             }
@@ -126,7 +165,7 @@
                         }
                     }
                 ],
-                "boost": 0.10000
+                \"boost\": 0.10000
             }
         
 
