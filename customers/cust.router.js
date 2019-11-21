@@ -5,10 +5,25 @@ const Controller= require('./cust.controller')
 const upload  =require("../config/multer");
 const multer =require("multer");
 
+
+/**
+ * @ENDPoINTS
+ * 
+ * @addCustomer - add customer
+ * 
+ * @addCustomer_csv  upolad and process the csv
+ * 
+ * @addCstomer_partial add partial Doc
+ */
+
+
+ //add customer
 router.route('/addCustomer').post(Controller.addCustomer)
 
 
 
+
+// upolad and process the csv
 router.route('/addCustomer/csv').post((req,res,next)=>{
 
         console.log("upload start #uploading")
@@ -35,6 +50,8 @@ router.route('/addCustomer/csv').post((req,res,next)=>{
 },Controller.addCsvCustomer)
 
 
+
+// add partial match
 
 router.route('/addCstomer/partial').post(Controller.addPartialRecords)
 

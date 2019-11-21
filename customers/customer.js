@@ -1,4 +1,13 @@
 const CUSTOMER = require('./cust.model')
+/**
+ * 
+ * @data - customer data
+ * @partial {Boolean} indicate the partial match 
+ * @exact {Boolean} indicate the exact match 
+ * @none {Boolean} indicate the no match 
+ * @es {Object} hold data ES swearch 
+ * 
+ */
 module.exports=class customemr{
     constructor(data, addPartialyHappen = false, partial = false, exact = false,none=false){
         this.data=data
@@ -17,6 +26,7 @@ module.exports=class customemr{
     }
 
 
+    // save to database
     async saveTodataBase(){
 
         try {
@@ -35,6 +45,8 @@ module.exports=class customemr{
         }
     }
 
+
+    // indexing to es search engine
     async indexing(){
         try {
             await this.data.mIndexing(() => console.log("indexing"))
@@ -78,14 +90,18 @@ module.exports=class customemr{
 
     }
 
+    // return status of nono
     isNone(){
         return this.none
     }
 
+    // return status of exact
     isExact(){
        return  this.exact
     }
 
+
+    // return status of partial
     isPartial(){
         return this.partial
     }

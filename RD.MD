@@ -1,36 +1,29 @@
-
-// mongoose ORM for mongodb database
-const mongoose = require("mongoose");
+### the app 
 
 
-// comongstic plugin to connect mongoose with elasticsearch
-const mongoosastic = require('mongoosastic')
+## ToDO list
+[/] setting app the server and routes
+[/] addCustemer 
+[/] add csvCustomer 
+    |_ [/] make it thread
+    |_ [/] remove the header 
+[/] plan for elastic query
+    |_ [/]read books about it
+    |_ [/]plan for single query to match exact and partial
+    |_[/] plan for multiple query one come for match and the other for exact
 
+[/] frontEnd
+    |_ [/] customer form
+    |_ [/] csv uploader
+    |_ [/] modal
+    |_ [/] http requests
+        |_ [/] upload csv
+        |_ [/] add customer
+        |_ [/] add partialExact
+        |_ [/] mainpulate ui
 
-/**
- * @name -----    customername
- * 
- * @email custometer email 
- * 
- * @phones {Arrays of phones}
- */
-// CustomerName, Email, Phone1, Phone2
-// schema for mapping my data
-const custschema = new mongoose.Schema({
-        name   : { type: String, es_type: "keyword", es_indexed: true},
-        email  : { type: String, es_type: "keyword", es_indexed: true},
-        phone1 : { type: String, es_type: "keyword", es_indexed: true},
-        phone2 : { type: String, es_type: "keyword", es_indexed: true}
-})
-
-
-// schema methods for search and indexing
-
-custschema.statics.exactOrPartial = function exactSearch(thisData){
-    const thisCoco = this
-    return new Promise((resolve,reject) => {
-        thisCoco.search({
-            "bool": {
+# elastic query
+ "bool": {
                 "should": [
                     {
                         "bool": {
@@ -136,45 +129,5 @@ custschema.statics.exactOrPartial = function exactSearch(thisData){
                 "boost": 0.10000
             }
         
-            }, function(err,data){
-                if(err){
-                    reject(err)
-                }else{
-                    resolve(data)
-                }
-            })
-    })
-    
-
-}   
 
 
-custschema.methods.mIndexing = function mIndexing(cb){
-    const thisCoco = this
-    return new Promise((resolve, reject) => {
-        this.index((err,data)=>{
-            if(err){
-                reject(err)
-            }else{
-                cb()
-                resolve(data)
-            }
-        })
-    })
-
-}
-
-
-
-custschema.plugin(mongoosastic,{
-    hosts:[
-        "localhost:9200",
-        "127.0.0.1:9200",
-    ],
-    indexAutomatically:false
-})
-
-
-
-
-module.exports = mongoose.model('customer', custschema)
